@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 极速殿堂 - FORMULA 1</title>
+    <style>
+        :root {
+            --primary: #FF1801; /* F1 标志性红色 */
+            --accent: #FFD700;  /* 荣耀金 */
+            --bg: #050505;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #ddd;
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        /* 统一入场动画 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 1. 顶部视觉区 */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            /* 替换为更有冲击力的 F1 赛道背景图 */
+            background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(5,5,5,1)),
+                        url('https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=2070&auto=format&fit=crop') center/cover;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-size: 6rem;
+            letter-spacing: -3px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            animation: fadeInUp 1s var(--transition);
+            color: var(--primary);
+            text-transform: uppercase;
+            font-style: italic;
+            text-shadow: 0 0 30px rgba(255,24,1,0.5);
+        }
+
+        .hero p {
+            font-size: 1.8rem;
+            color: #fff;
+            animation: fadeInUp 1s var(--transition) 0.3s backwards;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            text-transform: uppercase;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(255,24,1,0.6);
+            transform: scale(1.05);
+        }
+
+        /* 2. 内容板块通用 */
+        .content-section {
+            padding: 120px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            color: #fff;
+            margin-bottom: 70px;
+            position: relative;
+            text-transform: uppercase;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: var(--primary);
+            margin: 15px auto 0;
+        }
+
+        /* 3. 核心魅力 (卡片交互) */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 40px;
+            border-radius: 12px;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 24, 1, 0.3);
+            background: rgba(255,255,255,0.06);
+        }
+
+        .card h3 {
+            color: var(--accent);
+            margin-bottom: 20px;
+            font-size: 2rem;
+            text-transform: uppercase;
+        }
+
+        .card p { margin-bottom: 25px; opacity: 0.8; }
+
+        /* 4. 车队介绍 (简洁列表) */
+        .team-list {
+            margin-top: 50px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .team-item {
+            background: rgba(255,255,255,0.02);
+            padding: 20px;
+            border-left: 3px solid #333;
+            transition: var(--transition);
+        }
+        .team-item:hover {
+            border-left-color: var(--accent);
+            background: rgba(255,255,255,0.05);
+        }
+        .team-item h4 { color: #fff; margin-bottom: 5px; }
+
+        /* 5. 弹窗 (Modal) 样式 */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: #111;
+            padding: 50px;
+            border-radius: 15px;
+            border: 1px solid var(--primary);
+            max-width: 600px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px; right: 20px;
+            font-size: 2rem;
+            color: #fff;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+        }
+
+        .modal h2 { color: var(--accent); margin-bottom: 20px; text-transform: uppercase; }
+
+        .footer {
+            text-align: center;
+            padding: 60px;
+            font-size: 0.9rem;
+            opacity: 0.5;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <h1>FORMULA 1</h1>
+        <p>地表最快，科技与勇气的最终较量</p>
+        <a href="#charms" class="btn">探索极速</a>
+    </section>
+
+    <section id="charms" class="content-section">
+        <h2 class="section-title">核心魅力</h2>
+        <div class="grid">
+            <div class="card">
+                <div>
+                    <h3>极速瞬间</h3>
+                    <p>0-100km/h 仅需 2.6 秒，最高时速可突破 370km/h。这是精密机械与物理极限的对抗。</p>
+                </div>
+                <button class="btn show-modal" data-target="modal-speed">了解更多</button>
+            </div>
+            <div class="card">
+                <div>
+                    <h3>空气动力</h3>
+                    <p>完美的车身产生巨大的下压力，使赛车在弯道中也能紧贴地面，承受超过 5G 的侧向加速度。</p>
+                </div>
+                <button class="btn show-modal" data-target="modal-aero">了解更多</button>
+            </div>
+            <div class="card">
+                <div>
+                    <h3>团队配合</h3>
+                    <p>1.8秒的进站换胎不仅是速度，更是数百人团队精准协作、不容一个失误的最终体现。</p>
+                </div>
+                <button class="btn show-modal" data-target="modal-team">了解更多</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-section" style="background: rgba(255,255,255,0.01);">
+        <h2 class="section-title">传奇车队</h2>
+        <div class="team-list">
+            <div class="team-item">
+                <h4>Ferrari (法拉利)</h4>
+                <p>红色跃马，F1 历史上最成功的车队，象征着荣耀与激情。</p>
+            </div>
+            <div class="team-item">
+                <h4>Mercedes (梅赛德斯)</h4>
+                <p>现代霸主，以严谨的工程技术和连续多年的统治力闻名。</p>
+            </div>
+            <div class="team-item">
+                <h4>Red Bull (红牛)
+                </h4>
+                <p>后起之秀，以激进的策略和天马行空的空气动力学设计著称。</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal" id="modal-speed">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h2>极速瞬间 - 详细详情</h2>
+            <p>F1赛车的引擎转速高达 15,000 RPM。为了追求极速，车身每一克重量都经过精简，同时必须保证在高速下的稳定性。现代混合动力单元（Power Unit）拥有超过 1000 匹马力。</p>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-aero">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h2>空气动力学 - 核心秘密</h2>
+            <p>不仅仅是为了减小阻力，F1的空动设计主要为了产生“下压力”。这就像反向的飞机翅膀，把赛车“按”在赛道上。著名的 DRS 系统还可以通过调整尾翼角度来在直道上获得更高的尾速。</p>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-team">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h2>团队配合 - 幕后英雄</h2>
+            <p>每一次进站（Pit Stop）都是一场微型的F1比赛。20多名工作人员在不足2秒的时间内完成四个轮胎的更换。而在工厂，数百名工程师、数据分析师在实时监控赛车数据，制定战术。</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2026 F1 Enthusiast | 探索速度与激情的真谛
+    </footer>
+
+    <script>
+        // 简易弹窗控制
+        const showBtns = document.querySelectorAll('.show-modal');
+        const closeBtns = document.querySelectorAll('.close-modal');
+        const modals = document.querySelectorAll('.modal');
+
+        showBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const modalId = btn.getAttribute('data-target');
+                document.getElementById(modalId).classList.add('active');
+            });
+        });
+
+        closeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.modal').classList.remove('active');
+            });
+        });
+
+        // 点击弹窗外部关闭
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
+
+</body>
+</html>
